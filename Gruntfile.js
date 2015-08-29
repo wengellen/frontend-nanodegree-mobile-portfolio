@@ -18,6 +18,11 @@ module.exports = function(grunt) {
 
     // Grunt configuration
     grunt.initConfig({
+
+        pkg: grunt.file.readJSON('package.json'),
+
+        /** Setup tasks **/
+
         responsive_images: {
             dev: {
                 options: {
@@ -53,14 +58,14 @@ module.exports = function(grunt) {
                 files: [{
                     expand: true,
                     src: ['*.{gif,jpg,png}'],
-                    cwd: 'img_src/resp/pizza',
-                    dest: 'img/pizza'
+                    cwd: 'src/static/img_src/resp/pizza',
+                    dest: 'src/static/img/pizza'
                 },
                 {
                     expand: true,
                     src: ['*.{gif,jpg,png}'],
-                    cwd: 'img_src/resp',
-                    dest: 'img'
+                    cwd: 'src/static/img_src/resp',
+                    dest: 'src/static/img'
 
                 }]
             }
@@ -68,44 +73,77 @@ module.exports = function(grunt) {
 
 
         imageoptim: {
-            myTask: {
-                options: {
-                    jpegMini: false,
-                    imageAlpha: true,
-                    quitAfter: true
-                },
-                src: ['img']
+            options: {
+                jpegMini: false,
+                imageAlpha: false,
+                imageOptim: true,
+                quitAfter: true
+            },
+            build: {
+                src: [
+                    'dist/**/*.png',
+                    'dist/**/*.jpg',
+                    'dist/**/*.gif'
+                ]
             }
         },
 
         /* Clear out the images directory if it exists */
         clean: {
-            dev: {
-                src: ['img/']
+            img: {
+                src: ['src/static/img/']
+            },
+            build: {
+                src: ['dist/']
             }
         },
 
         /* Generate the images directory if it is missing */
         mkdir: {
-            dev: {
+            img: {
                 options: {
-                    create: ['img']
+                    create: ['src/static/img']
                 }
             }
         },
 
         /* Copy the "fixed" images that don't go through processing into the images/directory */
         copy: {
-            dev: {
+            img: {
                 files: [{
                     expand: true,
-                    src: 'img_src/fixed/*.{gif,jpg,png}',
-                    dest: 'img/',
+                    src: 'src/static/img_src/fixed/*.{gif,jpg,png}',
+                    dest: 'src/static/img/',
                     flatten: true
+                }]
+            },
+            build: {
+                files: [{
+                    expand: true,
+                    cwd: 'src/',
+                    src: [
+                        '**',
+                        '!static/img_src/**',
+                        '!static/scripts/**',
+                        '!static/scripts/**/*.js',
+                        '!static/styles/**/*.scss'
+                    ],
+                    dest: 'dist/'
                 }]
             }
         },
 
+        serviceWorker: {
+            files:[{
+                expand: true,
+                cwd: 'src/',
+                src: [
+                    'static/scripts/third_party/serviceworker-cache-polyfill.js',
+                    'static/scripts/sw.js'
+                ],
+                dest: 'dist/'
+            }]
+        },
 
 
         pagespeed: {
@@ -150,6 +188,6 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-clean');
     grunt.loadNpmTasks('grunt-contrib-copy');
     grunt.loadNpmTasks('grunt-mkdir');
-    grunt.registerTask('default', ['clean', 'mkdir', 'copy', 'responsive_images', 'imageoptim']);
+    grunt.registerTask('resp', ['clean:img', 'mkdir:img', 'copy:img', 'responsive_images']);
     //grunt.registerTask('default', ['psi-ngrok']);
 }
